@@ -63,3 +63,18 @@
   color: white;
   cursor: pointer;
 }
+
+.gdfo-resize-handle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 8px;
+  cursor: ew-resize;
+  z-index: 10000;
+  background: transparent;
+}
+
+.gdfo-resize-handle:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
