@@ -2,6 +2,7 @@
   "manifest_version": 3,
   "name": "Google Drive File Organizer",
   "version": "1.0.0",
+  "description": "An extension to organize Google Drive's workspace with AI ",
   "action": {
     "default_popup": "index.html"
   },
@@ -13,13 +14,13 @@
   },
   "content_scripts": [
     {
-      "js": ["src/content.jsx"],
+      "js": ["src/content-component/content-main.tsx"],
       "matches": ["https://www.google.com/*"]
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["icons/*.png"],
+      "resources": ["icons/*.png", "logo.png"],
       "matches": []
     }
   ]
