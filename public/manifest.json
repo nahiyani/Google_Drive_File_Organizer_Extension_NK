@@ -3,10 +3,20 @@
   "name": "Google Drive File Organizer",
   "version": "1.0.0",
   "description": "An extension to organize Google Drive's workspace with AI ",
+  "oauth2": {
+    "client_id": "1041485118122-kfbhll0hagv0j25uqudrlbkvnvqfvr6g.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/drive.metadata.readonly",
+      "https://www.googleapis.com/auth/drive.file"
+    ]
+  },
+  "background": {
+    "service_worker": "./public/background.js"
+  },
   "action": {
     "default_popup": "index.html"
   },
-  "permissions": ["scripting"],
+  "permissions": ["scripting", "identity"],
   "host_permissions": ["http://*/*", "https://*/*"],
   "icons": {
     "32": "gdfo_nk_32.png",

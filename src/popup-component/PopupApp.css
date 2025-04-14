@@ -385,3 +385,18 @@ input:checked + .toggle-slider:before {
 .appearance-section::-webkit-scrollbar-thumb {
   transition: background-color 0.3s ease;
 }
+
+.sign-in-button {
+  background-color: #1a73e8;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.sign-in-button:hover {
+  background-color: #1558b0;
+}

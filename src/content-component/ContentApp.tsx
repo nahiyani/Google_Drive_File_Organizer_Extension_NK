@@ -41,10 +41,29 @@ const ContentApp = () => {
       ...prev,
       `AI: Searching Google Drive for "${input}"...`,
     ]);
+    getDriveFiles();
     setInput("");
   };
 
   if (!visible) return null;
+
+  function getDriveFiles() {
+    chrome.runtime.sendMessage({ action: "auth" }, async (response) => {
+      const token = response.token;
+
+      const res = await fetch(
+        "https://www.googleapis.com/drive/v3/files?pageSize=10&fields=files(id,name)",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await res.json();
+      console.log("Drive Files:", data.files);
+    });
+  }
 
   return (
     <div className="gdfo-side-panel" ref={panelRef} style={{ width }}>

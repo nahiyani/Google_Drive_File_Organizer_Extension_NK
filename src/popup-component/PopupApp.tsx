@@ -1,13 +1,45 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const PopupApp = () => {
   const [tab, setTab] = useState("content");
-  const [semanticSearch, setSemanticSearch] = useState(true);
-  const [fileLabeling, setFileLabeling] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  const [semanticSearch, setSemanticSearch] = useState(
+    JSON.parse(localStorage.getItem("semanticSearch") || "true")
+  );
+  const [fileLabeling, setFileLabeling] = useState(
+    JSON.parse(localStorage.getItem("fileLabeling") || "false")
+  );
+  const [darkMode, setDarkMode] = useState(
+    JSON.parse(localStorage.getItem("darkMode") || "false")
+  );
 
   const getTabIndicatorClass = () => {
     return `tab-indicator tab-${tab}`;
+  };
+
+  const [authStatus, setAuthStatus] = useState<"idle" | "signed-in" | "error">(
+    "idle"
+  );
+
+  useEffect(() => {
+    localStorage.setItem("semanticSearch", JSON.stringify(semanticSearch));
+  }, [semanticSearch]);
+
+  useEffect(() => {
+    localStorage.setItem("fileLabeling", JSON.stringify(fileLabeling));
+  }, [fileLabeling]);
+
+  useEffect(() => {
+    localStorage.setItem("darkMode", JSON.stringify(darkMode));
+  }, [darkMode]);
+
+  const handleSignIn = () => {
+    chrome.runtime.sendMessage({ action: "auth" }, (response) => {
+      if (response?.success) {
+        setAuthStatus("signed-in");
+      } else {
+        setAuthStatus("error");
+      }
+    });
   };
 
   return (
@@ -87,6 +119,19 @@ const PopupApp = () => {
           <div className="warning">
             <span className="warning-icon">⚠️</span>
             Authentication logic not yet implemented
+          </div>
+
+          <div className="setting-item">
+            <span className="setting-label">
+              {authStatus === "signed-in"
+                ? "Signed in to Google Drive"
+                : "Sign in to access Google Drive"}
+            </span>
+            {authStatus !== "signed-in" && (
+              <button onClick={handleSignIn} className="sign-in-button">
+                Sign In
+              </button>
+            )}
           </div>
 
           <div className="setting-item">
