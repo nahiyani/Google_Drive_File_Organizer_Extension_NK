@@ -2,38 +2,78 @@ import { useState, useEffect } from "react";
 
 const PopupApp = () => {
   const [tab, setTab] = useState("content");
-  const [semanticSearch, setSemanticSearch] = useState(
-    JSON.parse(localStorage.getItem("semanticSearch") || "true")
-  );
-  const [fileLabeling, setFileLabeling] = useState(
-    JSON.parse(localStorage.getItem("fileLabeling") || "false")
-  );
-  const [darkMode, setDarkMode] = useState(
-    JSON.parse(localStorage.getItem("darkMode") || "false")
-  );
+  const [semanticSearch, setSemanticSearch] = useState(false);
+  const [fileLabeling, setFileLabeling] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  const [authStatus, setAuthStatus] = useState<"idle" | "signed-in" | "error">("idle");
+  const [connectionStatus, setConnectionStatus] = useState("Not connected");
+
+  // Load settings from storage on component mount
+  useEffect(() => {
+    chrome.storage.local.get(
+      ["semanticSearch", "fileLabeling", "darkMode"],
+      (result) => {
+        if (result.semanticSearch !== undefined) setSemanticSearch(result.semanticSearch);
+        if (result.fileLabeling !== undefined) setFileLabeling(result.fileLabeling);
+        if (result.darkMode !== undefined) setDarkMode(result.darkMode);
+      }
+    );
+    
+    // Check if we're already authenticated
+    checkAuthStatus();
+    
+    // Attempt to connect to background script
+    pingBackgroundScript();
+  }, []);
+
+  // Update storage when settings change
+  useEffect(() => {
+    chrome.storage.local.set({ semanticSearch });
+  }, [semanticSearch]);
+
+  useEffect(() => {
+    chrome.storage.local.set({ fileLabeling });
+  }, [fileLabeling]);
+
+  useEffect(() => {
+    chrome.storage.local.set({ darkMode });
+  }, [darkMode]);
+  
+  const pingBackgroundScript = () => {
+    chrome.runtime.sendMessage({ action: "popup_ready" }, () => {
+      if (chrome.runtime.lastError) {
+        console.error("Connection error:", chrome.runtime.lastError);
+        setConnectionStatus("Error connecting to extension");
+      } else {
+        setConnectionStatus("Connected to extension");
+      }
+    });
+  };
+  
+  const checkAuthStatus = () => {
+    chrome.identity.getAuthToken({ interactive: false }, (token) => {
+      if (chrome.runtime.lastError || !token) {
+        setAuthStatus("idle");
+      } else {
+        setAuthStatus("signed-in");
+      }
+    });
+  };
 
   const getTabIndicatorClass = () => {
     return `tab-indicator tab-${tab}`;
   };
 
-  const [authStatus, setAuthStatus] = useState<"idle" | "signed-in" | "error">(
-    "idle"
-  );
-
-  useEffect(() => {
-    localStorage.setItem("semanticSearch", JSON.stringify(semanticSearch));
-  }, [semanticSearch]);
-
-  useEffect(() => {
-    localStorage.setItem("fileLabeling", JSON.stringify(fileLabeling));
-  }, [fileLabeling]);
-
-  useEffect(() => {
-    localStorage.setItem("darkMode", JSON.stringify(darkMode));
-  }, [darkMode]);
-
   const handleSignIn = () => {
+    setAuthStatus("idle"); // Set to idle while waiting
+    
     chrome.runtime.sendMessage({ action: "auth" }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error("Auth error:", chrome.runtime.lastError);
+        setAuthStatus("error");
+        return;
+      }
+      
       if (response?.success) {
         setAuthStatus("signed-in");
       } else {
@@ -113,14 +153,13 @@ const PopupApp = () => {
               <option value="filesOnly">Skip folders</option>
             </select>
           </div>
+          
+          <div className="connection-status">
+            {connectionStatus}
+          </div>
         </div>
 
         <div className={`user-section ${tab === "user" ? "active" : ""}`}>
-          <div className="warning">
-            <span className="warning-icon">⚠️</span>
-            Authentication logic not yet implemented
-          </div>
-
           <div className="setting-item">
             <span className="setting-label">
               {authStatus === "signed-in"

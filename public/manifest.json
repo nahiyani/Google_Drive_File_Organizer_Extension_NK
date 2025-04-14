@@ -2,21 +2,26 @@
   "manifest_version": 3,
   "name": "Google Drive File Organizer",
   "version": "1.0.0",
-  "description": "An extension to organize Google Drive's workspace with AI ",
+  "description": "An extension to organize Google Drive's workspace with AI",
   "oauth2": {
-    "client_id": "1041485118122-kfbhll0hagv0j25uqudrlbkvnvqfvr6g.apps.googleusercontent.com",
+    "client_id": "189034115537-u20tvjmpmum1d2de8rkki64p4ilibhel.apps.googleusercontent.com",
     "scopes": [
       "https://www.googleapis.com/auth/drive.metadata.readonly",
       "https://www.googleapis.com/auth/drive.file"
     ]
   },
   "background": {
-    "service_worker": "./public/background.js"
+    "service_worker": "./public/background.js",
+    "type": "module"
   },
   "action": {
-    "default_popup": "index.html"
+    "default_popup": "index.html",
+    "default_icon": {
+      "32": "gdfo_nk_32.png",
+      "128": "gdfo_nk_128.png"
+    }
   },
-  "permissions": ["scripting", "identity"],
+  "permissions": ["scripting", "identity", "storage"],
   "host_permissions": ["http://*/*", "https://*/*"],
   "icons": {
     "32": "gdfo_nk_32.png",
@@ -24,14 +29,14 @@
   },
   "content_scripts": [
     {
-      "js": ["src/content-component/content-main.tsx"],
-      "matches": ["https://www.google.com/*"]
+      "js": ["content-script.js"],
+      "matches": ["https://drive.google.com/*", "https://www.google.com/*"]
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["icons/*.png", "logo.png"],
-      "matches": []
+      "resources": ["icons/*.png", "logo.png", "index.html", "*.js", "*.css"],
+      "matches": ["<all_urls>"]
     }
   ]
 }
