@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 
 const PopupApp = () => {
+  // REFERENCES AND STATES
   const [tab, setTab] = useState("content");
   const [semanticSearch, setSemanticSearch] = useState(
     JSON.parse(localStorage.getItem("semanticSearch") || "true")
@@ -20,6 +21,72 @@ const PopupApp = () => {
     "idle"
   );
 
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const handleConfirmSignOut = () => {
+    handleSignOut();
+    setShowSignOutConfirm(false);
+  };
+
+  const handleSignIn = () => {
+    chrome.runtime.sendMessage({ action: "auth" }, (response) => {
+      if (response?.success) {
+        setAuthStatus("signed-in");
+        setUserEmail(response.email);
+        setProfilePicture(response.profilePicture);
+
+        localStorage.setItem("authStatus", "signed-in");
+        localStorage.setItem("userEmail", response.email);
+        localStorage.setItem("profilePicture", response.profilePicture || "");
+      } else {
+        setAuthStatus("error");
+        console.error("Auth error:", response?.error);
+      }
+    });
+  };
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
+
+  const handleSignOut = () => {
+    chrome.identity.getAuthToken({ interactive: false }, (token) => {
+      if (typeof token === "string") {
+        chrome.identity.removeCachedAuthToken({ token }, () => {
+          fetch(`https://accounts.google.com/o/oauth2/revoke?token=${token}`);
+        });
+      }
+
+      // Clear local state regardless
+      setAuthStatus("idle");
+      setUserEmail(null);
+      setProfilePicture(null);
+      localStorage.removeItem("authStatus");
+      localStorage.removeItem("userEmail");
+      localStorage.removeItem("profilePicture");
+    });
+  };
+
+  // UTILITY FUNCTIONS
+  useEffect(() => {
+    const savedAuth = localStorage.getItem("authStatus");
+    const savedEmail = localStorage.getItem("userEmail");
+    const savedPic = localStorage.getItem("profilePicture");
+
+    if (savedAuth === "signed-in" && savedEmail) {
+      setAuthStatus("signed-in");
+      setUserEmail(savedEmail);
+      if (savedPic) setProfilePicture(savedPic);
+    }
+  }, []);
+
+  useEffect(() => {
+    chrome.runtime.sendMessage({ action: "checkAuth" }, (response) => {
+      if (response?.email) {
+        setAuthStatus("signed-in");
+        setUserEmail(response.email);
+        setProfilePicture(response.profilePicture || null);
+      }
+    });
+  }, []);
+
   useEffect(() => {
     localStorage.setItem("semanticSearch", JSON.stringify(semanticSearch));
   }, [semanticSearch]);
@@ -32,16 +99,38 @@ const PopupApp = () => {
     localStorage.setItem("darkMode", JSON.stringify(darkMode));
   }, [darkMode]);
 
-  const handleSignIn = () => {
-    chrome.runtime.sendMessage({ action: "auth" }, (response) => {
-      if (response?.success) {
+  useEffect(() => {
+    const handleAuthUpdated = (message: any) => {
+      if (message.action === "authUpdated") {
         setAuthStatus("signed-in");
-      } else {
-        setAuthStatus("error");
-      }
-    });
-  };
+        setUserEmail(message.email);
+        setProfilePicture(message.profilePicture || null);
 
+        localStorage.setItem("authStatus", "signed-in");
+        localStorage.setItem("userEmail", message.email);
+        localStorage.setItem("profilePicture", message.profilePicture || "");
+      }
+    };
+
+    chrome.runtime.onMessage.addListener(handleAuthUpdated);
+    return () => chrome.runtime.onMessage.removeListener(handleAuthUpdated);
+  }, []);
+
+  useEffect(() => {
+    const savedAuth = localStorage.getItem("authStatus");
+    const savedEmail = localStorage.getItem("userEmail");
+    const savedPic = localStorage.getItem("profilePicture");
+
+    if (savedAuth === "signed-in" && savedEmail) {
+      setAuthStatus("signed-in");
+      setUserEmail(savedEmail);
+      if (savedPic) setProfilePicture(savedPic);
+    } else {
+      handleSignIn();
+    }
+  }, []);
+
+  // JSX
   return (
     <div className={`popup-wrapper ${darkMode ? "dark" : ""}`}>
       <div className="popup-header">
@@ -116,23 +205,41 @@ const PopupApp = () => {
         </div>
 
         <div className={`user-section ${tab === "user" ? "active" : ""}`}>
-          <div className="warning">
-            <span className="warning-icon">⚠️</span>
-            Authentication logic not yet implemented
-          </div>
+          {authStatus !== "signed-in" && (
+            <div className="warning">
+              <span className="warning-icon">⚠️</span>
+              User authentication is required
+            </div>
+          )}
 
-          <div className="setting-item">
-            <span className="setting-label">
-              {authStatus === "signed-in"
-                ? "Signed in to Google Drive"
-                : "Sign in to access Google Drive"}
-            </span>
-            {authStatus !== "signed-in" && (
+          {authStatus === "signed-in" ? (
+            <div className="signed-in-info">
+              <span className="setting-label">Signed in as</span>
+              <div className="user-profile">
+                <div className="user-info">
+                  {profilePicture && (
+                    <img src={profilePicture} className="user-avatar" />
+                  )}
+                  <span className="user-email">{userEmail}</span>
+                </div>
+                <button
+                  className="sign-out-button"
+                  onClick={() => setShowSignOutConfirm(true)}
+                >
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <span className="setting-label">
+                Sign in to access Google Drive
+              </span>
               <button onClick={handleSignIn} className="sign-in-button">
                 Sign In
               </button>
-            )}
-          </div>
+            </>
+          )}
 
           <div className="setting-item">
             <span className="setting-label">
@@ -211,8 +318,30 @@ const PopupApp = () => {
           </div>
         </div>
       </div>
+
+      {showSignOutConfirm && (
+        <div className="signout-modal">
+          <div className="modal-content">
+            <h3>Sign out of Google Account?</h3>
+            <p>
+              You will be disconnected and unable to access your files until you
+              sign in again.
+            </p>
+            <div className="modal-buttons">
+              <button
+                className="cancel-button"
+                onClick={() => setShowSignOutConfirm(false)}
+              >
+                Cancel
+              </button>
+              <button className="confirm-button" onClick={handleConfirmSignOut}>
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
-
 export default PopupApp;

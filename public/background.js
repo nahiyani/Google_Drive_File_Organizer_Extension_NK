@@ -1,17 +1,47 @@
+// Listen for messages from other parts of the extension (content scripts, popup)
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "auth") {
+    // Check if the user is already authenticated (OAuth token exists)
     chrome.identity.getAuthToken({ interactive: true }, (token) => {
-      if (token) {
-        sendResponse({ token });
-      } else {
+      if (!token) {
         sendResponse({
+          success: false,
           error: chrome.runtime.lastError?.message || "Auth failed",
         });
+        return;
       }
+
+      // Fetch user information from Google's UserInfo API
+      fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => res.json())
+        .then((userInfo) => {
+          chrome.runtime.sendMessage({
+            action: "authUpdated",
+            email: userInfo.email,
+            profilePicture: userInfo.picture,
+          });
+
+          sendResponse({
+            success: true,
+            email: data.email,
+            profilePicture: data.picture,
+            name: data.name,
+          });
+        })
+        .catch((err) => {
+          sendResponse({
+            success: false,
+            error: "Failed to fetch user info",
+          });
+        });
     });
-    return true;
+
+    return true; // Keep this to allow async sendResponse
   }
 
+  // Handle Google Drive search requests (Search directory)
   if (request.action === "searchDrive") {
     chrome.identity.getAuthToken({ interactive: false }, (token) => {
       if (!token) {
@@ -21,12 +51,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return;
       }
 
+      // Construct the parameters for the Google Drive API request
       const params = {
         fields: "files(id,name,mimeType,modifiedTime)",
         orderBy: "modifiedTime desc",
         pageSize: "1000",
       };
 
+      // Queries for the Google Drive API
       let query = "";
 
       if (request.query) {
@@ -52,10 +84,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         params.q = query;
       }
 
+      // Construct the URL for the Google Drive API
       const url = `https://www.googleapis.com/drive/v3/files?${new URLSearchParams(
         params
       ).toString()}`;
 
+      // Fetch data from the Google Drive API
       fetch(url, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -79,6 +113,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
 
+  // Handle dark mode changes
   if (request.action === "darkModeChanged") {
     chrome.tabs.query({}, (tabs) => {
       for (const tab of tabs) {
