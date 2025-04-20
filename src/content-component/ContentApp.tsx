@@ -17,6 +17,8 @@ const ContentApp = () => {
   });
   const panelRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
+  const [recentFiles, setRecentFiles] = useState<GoogleDriveFile[]>([]);
+  const [showRecent, setShowRecent] = useState(true);
 
   // UTILITY FUNCTIONS
   const getFileListContainer = () =>
@@ -81,15 +83,32 @@ const ContentApp = () => {
   const defaultFileIcon = () =>
     `<img src="https://ssl.gstatic.com/docs/doclist/images/icon_11_generic_list.png" alt="File" class="gdfo-icon" />`;
 
+  const formatTime = (iso: string) => {
+    const dt = new Date(iso);
+    return dt.toLocaleString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  };
+
   const renderFileHTML = (file: GoogleDriveFile) => {
     const icon = getMimeIcon(file.mimeType);
+    const typeLabel = formatMimeLabel(file.mimeType);
+    const lastOpened = file.viewedByMeTime
+      ? formatTime(file.viewedByMeTime)
+      : "";
     return `
       <div class='gdfo-file'>
         <span class='gdfo-file-icon'>${icon}</span>
         <a href="${getDriveLink(file)}" target="_blank" class='gdfo-file-name'>
           ${file.name}
         </a>
-        <span class='gdfo-file-type'>(${formatMimeLabel(file.mimeType)})</span>
+       <span class='gdfo-file-type'>(${typeLabel}${
+      lastOpened ? ` · Last Modified ${lastOpened}` : ""
+    })</span>
       </div>
     `;
   };
@@ -192,11 +211,7 @@ const ContentApp = () => {
       { action: "searchDrive", query: "", recent: true },
       (response) => {
         if (response?.results?.length) {
-          setMessages((prev) => [
-            ...prev,
-            "<div class='gdfo-section-title'>🕒 Recent</div>",
-            ...response.results.map((f: GoogleDriveFile) => renderFileHTML(f)),
-          ]);
+          setRecentFiles(response.results);
         }
       }
     );
@@ -248,6 +263,55 @@ const ContentApp = () => {
       </div>
 
       <div className="gdfo-chat">
+        <div
+          className="gdfo-section-title"
+          onClick={() => setShowRecent(!showRecent)}
+        >
+          <div className="gdfo-section-icon-title">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              height="20"
+              viewBox="0 0 24 24"
+              width="20"
+              fill="currentColor"
+            >
+              <path
+                d="M12 8v5h5v-2h-3V8h-2zm0-6C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 
+      0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"
+              />
+            </svg>
+            <span className="gdfo-section-label">Recent</span>
+            <svg
+              className={`gdfo-chevron ${showRecent ? "expanded" : ""}`}
+              xmlns="http://www.w3.org/2000/svg"
+              height="20"
+              viewBox="0 0 24 24"
+              width="20"
+              fill="currentColor"
+            >
+              <path d="M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z" />
+            </svg>
+          </div>
+        </div>
+
+        {showRecent &&
+          recentFiles.map((f) => (
+            <div
+              key={f.id}
+              className="gdfo-message"
+              dangerouslySetInnerHTML={{ __html: renderFileHTML(f) }}
+            />
+          ))}
+
+        {showRecent &&
+          recentFiles.map((f) => (
+            <div
+              key={f.id}
+              className="gdfo-message"
+              dangerouslySetInnerHTML={{ __html: renderFileHTML(f) }}
+            />
+          ))}
+
         {messages.map((msg, i) => (
           <div
             key={i}

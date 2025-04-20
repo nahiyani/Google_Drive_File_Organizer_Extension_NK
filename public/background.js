@@ -53,9 +53,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
       // Construct the parameters for the Google Drive API request
       const params = {
-        fields: "files(id,name,mimeType,modifiedTime)",
-        orderBy: "modifiedTime desc",
+        fields: "files(id,name,mimeType,viewedByMeTime,thumbnailLink)",
+        orderBy: "viewedByMeTime desc",
         pageSize: "1000",
+        spaces: "drive",
+        corpora: "user",
       };
 
       // Queries for the Google Drive API
