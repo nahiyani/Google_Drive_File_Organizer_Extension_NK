@@ -171,7 +171,18 @@ const PopupApp = () => {
                 <input
                   type="checkbox"
                   checked={darkMode}
-                  onChange={() => setDarkMode(!darkMode)}
+                  onChange={() => {
+                    const newDarkMode = !darkMode;
+                    setDarkMode(newDarkMode);
+                    localStorage.setItem(
+                      "darkMode",
+                      JSON.stringify(newDarkMode)
+                    );
+                    chrome.runtime.sendMessage({
+                      action: "darkModeChanged",
+                      value: newDarkMode,
+                    });
+                  }}
                 />
                 <span className="toggle-slider"></span>
               </label>

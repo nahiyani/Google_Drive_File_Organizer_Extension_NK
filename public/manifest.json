@@ -25,7 +25,7 @@
   "content_scripts": [
     {
       "js": ["src/content-component/content-main.tsx"],
-      "matches": ["https://www.google.com/*"]
+      "matches": ["https://www.google.com/*", "https://drive.google.com/*"]
     }
   ],
   "web_accessible_resources": [
