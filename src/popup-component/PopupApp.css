@@ -246,7 +246,7 @@ input:checked + .toggle-slider:before {
 /*Dark Mode Styles*/
 
 .popup-wrapper.dark {
-  background-color: #202124;
+  background-color: transparent;
   color: #e8eaed;
 }
 
@@ -399,4 +399,20 @@ input:checked + .toggle-slider:before {
 
 .sign-in-button:hover {
   background-color: #1558b0;
+}
+
+/*organize button styling*/
+.organize-button-container{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50%;
+  margin: 0 auto;
+}
+
+.organize-button{
+  font-family: "Google Sans", system-ui, sans-serif;
+  color: white;
+  background-color: #1a73e8;
+  width: 100%;
 }

@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
+import Organize from './Organize';
 
 const PopupApp = () => {
   const [tab, setTab] = useState("content");
+  const [showOrganize, setShowOrganize] = useState(false);
   const [semanticSearch, setSemanticSearch] = useState(
     JSON.parse(localStorage.getItem("semanticSearch") || "true")
   );
@@ -41,6 +43,34 @@ const PopupApp = () => {
       }
     });
   };
+
+  const handleOrganizeClick = () => {
+    setShowOrganize(true);
+  };
+
+  const handleBackToSettings = () => {
+    setShowOrganize(false);
+  };
+
+  if (showOrganize) {
+    return (
+      <div className={`popup-wrapper ${darkMode ? "dark" : ""}`}>
+        <div className="popup-header">
+          <img src="logo.png" alt="logo" className="popup-logo" />
+          <div className="popup-title">
+            <h2>Google Drive File Organizer</h2>
+            <p>Organize Files</p>
+          </div>
+        </div>
+        <div className="back-button-container">
+          <button className="back-button" onClick={handleBackToSettings}>
+            &larr; Back
+          </button>
+        </div>
+        <Organize />
+      </div>
+    );
+  }
 
   return (
     <div className={`popup-wrapper ${darkMode ? "dark" : ""}`}>
@@ -113,6 +143,12 @@ const PopupApp = () => {
               <option value="filesOnly">Skip folders</option>
             </select>
           </div>
+
+          <div className="organize-button-container">
+            <button className="organize-button" onClick={handleOrganizeClick}>
+              Organize
+            </button>
+          </div>
         </div>
 
         <div className={`user-section ${tab === "user" ? "active" : ""}`}>
@@ -160,9 +196,7 @@ const PopupApp = () => {
         </div>
 
         <div
-          className={`appearance-section ${
-            tab === "appearance" ? "active" : ""
-          }`}
+          className={`appearance-section ${tab === "appearance" ? "active" : ""}`}
         >
           <div className="setting-item">
             <span className="setting-label">Enable Dark Mode</span>

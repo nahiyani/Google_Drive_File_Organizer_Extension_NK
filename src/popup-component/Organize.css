@@ -1,0 +1,203 @@
+.organize-page {
+  padding: 20px;
+  font-family: "Google Sans", system-ui, sans-serif;
+  gap: 1rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.organize-title {
+  margin-bottom: 16px;
+  font-size: 24px;
+  font-family: "Google Sans", system-ui, sans-serif;
+  color: #000000;
+}
+
+.input-pair {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+  gap: 10px;
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.color-picker-wrapper {
+  position: relative;
+}
+
+.color-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 8px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.color-row {
+  display: flex;
+  gap: 6px;
+}
+
+.color-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.color-circle:hover {
+  border-color: #3984ed;
+  transform: scale(1.1);
+}
+
+.color-dropdown .color-circle:hover {
+  border-color: #3984ed;
+  transform: scale(1.1);
+}
+
+.color-circle.selected {
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px #3984ed;
+}
+
+input[type="text"] {
+  flex-grow: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: #f1f3f4;
+  font-family: "Google Sans", system-ui, sans-serif;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+.add-button,
+.organize-my-documents-button,
+.back-button,
+.remove-button {
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: "Google Sans", system-ui, sans-serif;
+}
+
+.add-button,
+.organize-my-documents-button,
+.back-button {
+  background-color: #8ab4f8;
+  color: white;
+}
+
+.add-button {
+  padding: 5px 12px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.organize-my-documents-button {
+  padding: 10px 18px;
+  margin-top: auto;
+  margin-bottom: 20px;
+}
+
+.back-button {
+  padding: 8px 16px;
+  margin-bottom: 12px;
+}
+
+.remove-button {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  font-size: 20px;
+  background-color: #f5f5f5;
+  color: #8ab4f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s, color 0.2s;
+  line-height: 1;
+}
+
+.remove-button:hover {
+  background-color: #8ab4f8;
+  color: white;
+}
+
+.add-button:hover,
+.organize-my-documents-button:hover,
+.back-button:hover {
+  background-color: #155ab6;
+}
+
+@media (prefers-color-scheme: dark) {
+  .organize-page {
+    background-color: transparent;
+    color: #ffffff;
+  }
+
+  h2.organize-title {
+    color: #ffffff;
+  }
+
+  .add-button, 
+  .organize-my-documents-button,
+  .back-button {
+    background-color: #3984ed;
+  }
+
+  .add-button:hover, 
+  .organize-my-documents-button:hover,
+  .back-button:hover {
+    background-color: #155ab6;
+  }
+
+  .color-dropdown {
+    background: #333;
+    border-color: #555;
+  }
+
+  input[type="text"] {
+    background-color: #333;
+    color: #fff;
+    border-color: #555;
+  }
+
+  .input-pair {
+    background: #2d2d2d;
+  }
+
+  .color-circle {
+    border-color: transparent;
+  }
+
+  .remove-button {
+    background-color: #333;
+    color: #8ab4f8;
+  }
+
+  .remove-button:hover {
+    background-color: #3984ed;
+    color: white;
+  }
+}
