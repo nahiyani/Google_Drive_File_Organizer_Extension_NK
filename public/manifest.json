@@ -7,7 +7,9 @@
     "client_id": "1041485118122-kfbhll0hagv0j25uqudrlbkvnvqfvr6g.apps.googleusercontent.com",
     "scopes": [
       "https://www.googleapis.com/auth/drive.metadata.readonly",
-      "https://www.googleapis.com/auth/drive.file"
+      "https://www.googleapis.com/auth/drive.file",
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile"
     ]
   },
   "background": {
@@ -19,15 +21,12 @@
   "permissions": ["scripting", "identity"],
   "host_permissions": ["http://*/*", "https://*/*"],
   "icons": {
-    "32": "gdfo_nk_32.png",
-    "128": "gdfo_nk_128.png"
+    "16": "icon16.png",
+    "32": "icon32.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
   },
-  "content_scripts": [
-    {
-      "js": ["src/content-component/content-main.tsx"],
-      "matches": ["https://www.google.com/*"]
-    }
-  ],
+
   "web_accessible_resources": [
     {
       "resources": ["icons/*.png", "logo.png"],
