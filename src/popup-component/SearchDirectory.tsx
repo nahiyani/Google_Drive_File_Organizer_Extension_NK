@@ -263,14 +263,6 @@ const SearchDirectory = ({
     return `${baseUrl}${file.id}`;
   };
 
-  // Function to handle storage changes
-  const handleStorageChange = (e: StorageEvent) => {
-    // Update dark mode if storage changes
-    if (e.key === "darkMode") {
-      setDarkMode(JSON.parse(e.newValue || "false"));
-    }
-  };
-
   // Function to build date range for time filters
   const getDateRangeQuery = (timeFilterId: string) => {
     // Find the time filter

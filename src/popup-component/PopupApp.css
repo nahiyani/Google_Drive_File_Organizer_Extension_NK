@@ -950,6 +950,7 @@ input:checked + .toggle-slider:before {
   gap: 8px;
 }
 
+/* Light mode search input style */
 .search-input {
   flex: 1;
   padding: 10px 12px;
@@ -957,6 +958,9 @@ input:checked + .toggle-slider:before {
   border: 1px solid #dadce0;
   font-size: 14px;
   outline: none;
+  background: #fff !important;
+  color: #202124 !important;
+  transition: background 0.2s, color 0.2s;
 }
 
 .search-input:focus {
@@ -1163,9 +1167,10 @@ input:checked + .toggle-slider:before {
   color: #9aa0a6;
 }
 
+/* Dark mode search input style */
 .popup-wrapper.dark .search-input {
-  background: #303134;
-  color: #e8eaed;
+  background: #303134 !important;
+  color: #e8eaed !important;
   border-color: #5f6368;
 }
 
