@@ -14,7 +14,8 @@
     ]
   },
   "background": {
-    "service_worker": "./public/background.js"
+    "service_worker": "src/background/background.ts",
+    "type": "module"
   },
   "action": {
     "default_popup": "index.html"
