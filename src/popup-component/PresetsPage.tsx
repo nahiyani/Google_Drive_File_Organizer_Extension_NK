@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./PopupApp.css";
 
 const presetOptions = [
@@ -30,6 +30,72 @@ const PresetsPage = ({
   darkMode: boolean;
 }) => {
   const [selectedPreset, setSelectedPreset] = useState("preset1");
+  const [organizing, setOrganizing] = useState(false);
+  const [organizationStatus, setOrganizationStatus] = useState("");
+  const [progress, setProgress] = useState(0);
+  const [organizationComplete, setOrganizationComplete] = useState(false);
+
+  // Listen for progress updates from the background script
+  useEffect(() => {
+    const progressListener = (
+      message: { action: string; progress: number; status: string },
+      _sender: chrome.runtime.MessageSender,
+      _sendResponse: (response?: any) => void
+    ) => {
+      if (message.action === "organizationProgress") {
+        setProgress(message.progress);
+        setOrganizationStatus(message.status);
+      }
+      return true;
+    };
+
+    chrome.runtime.onMessage.addListener(progressListener);
+    return () => chrome.runtime.onMessage.removeListener(progressListener);
+  }, []);
+
+  const handleOrganizeWithAI = () => {
+    setOrganizing(true);
+    setOrganizationStatus("Starting organization...");
+    setProgress(5);
+    setOrganizationComplete(false);
+
+    chrome.runtime.sendMessage(
+      {
+        action: "organizeWithAI",
+        preset: selectedPreset,
+      },
+      (response) => {
+        if (response.success) {
+          setOrganizationStatus("Organization complete!");
+          setProgress(100);
+          setOrganizationComplete(true);
+
+          // Refresh Google Drive after a short delay to see changes
+          setTimeout(() => {
+            chrome.tabs.query(
+              { active: true, currentWindow: true },
+              function (tabs) {
+                if (tabs[0]?.id) {
+                  chrome.tabs.reload(tabs[0].id);
+                }
+              }
+            );
+          }, 1000);
+
+          // Reset button to default after 3 seconds
+          setTimeout(() => {
+            setOrganizationComplete(false);
+            setOrganizationStatus("");
+            setProgress(0);
+          }, 3000);
+        } else {
+          setOrganizationStatus(`Error: ${response.error}`);
+          setOrganizationComplete(false);
+        }
+        setOrganizing(false);
+      }
+    );
+  };
 
   return (
     <div className={`popup-wrapper ${darkMode ? "dark" : ""}`}>
@@ -95,7 +161,42 @@ const PresetsPage = ({
           ))}
         </div>
 
-        <button className="organize-ai-button-google">Organize with AI</button>
+        <button
+          className={`organize-ai-button-google${
+            organizing ? " organizing" : ""
+          }`}
+          onClick={handleOrganizeWithAI}
+          disabled={organizing || selectedPreset === "custom"}
+        >
+          {organizing ? (
+            <div className="button-progress-content">
+              <span className="button-status-text">{organizationStatus}</span>
+              <div className="button-progress-bar-container">
+                <div
+                  className="button-progress-bar"
+                  style={{ width: `${progress}%` }}
+                ></div>
+              </div>
+            </div>
+          ) : organizationComplete ? (
+            <div className="button-complete-content">
+              <span>Organization complete!</span>
+              <span className="success-checkmark">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  width="18"
+                  height="18"
+                  fill="currentColor"
+                >
+                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                </svg>
+              </span>
+            </div>
+          ) : (
+            "Organize with AI"
+          )}
+        </button>
       </div>
     </div>
   );
