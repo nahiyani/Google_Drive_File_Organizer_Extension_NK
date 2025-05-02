@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Organize from "./Organize";
 import PresetsPage from "./PresetsPage";
+import SearchDirectory from "./SearchDirectory";
 
 const PopupApp = () => {
   // REFERENCES AND STATES
@@ -8,6 +9,7 @@ const PopupApp = () => {
   const [showOrganize, setShowOrganize] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showPresets, setShowPresets] = useState(true);
+  const [showSearchDirectory, setShowSearchDirectory] = useState(false);
   const [semanticSearch, setSemanticSearch] = useState(
     JSON.parse(localStorage.getItem("semanticSearch") || "true")
   );
@@ -67,9 +69,9 @@ const PopupApp = () => {
   };
 
   // Nahiyan's organize button logic
-  const handleOrganizeClick = () => {
-    setShowOrganize(true);
-  };
+  // const handleOrganizeClick = () => {
+  //   setShowOrganize(true);
+  // };
   const handleBackToSettings = () => {
     setShowOrganize(false);
   };
@@ -136,6 +138,12 @@ const PopupApp = () => {
     }
   }, []);
 
+  // Add handler for navigating to Search Directory
+  const handleSearchDirectory = () => {
+    setShowPresets(false);
+    setShowSearchDirectory(true);
+  };
+
   // Organize view logic
   if (showOrganize) {
     return (
@@ -163,6 +171,18 @@ const PopupApp = () => {
     );
   }
 
+  // Search Directory page logic
+  if (showSearchDirectory) {
+    return (
+      <SearchDirectory
+        onBackToPresets={() => {
+          setShowSearchDirectory(false);
+          setShowPresets(true);
+        }}
+      />
+    );
+  }
+
   // PresetsPage logic
   if (showPresets) {
     return (
@@ -171,6 +191,8 @@ const PopupApp = () => {
           setShowPresets(false);
           setShowSettings(true);
         }}
+        onSearchDirectory={handleSearchDirectory}
+        darkMode={darkMode}
       />
     );
   }
@@ -262,6 +284,7 @@ const PopupApp = () => {
                   <option value="filesOnly">Skip folders</option>
                 </select>
               </div>
+              {/* Organize button removed as requested
               <div className="organize-button-container">
                 <button
                   className="organize-button"
@@ -270,6 +293,7 @@ const PopupApp = () => {
                   Organize
                 </button>
               </div>
+              */}
             </div>
 
             <div className={`user-section ${tab === "user" ? "active" : ""}`}>
